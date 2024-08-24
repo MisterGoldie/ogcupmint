@@ -15,10 +15,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       <html>
         <head>
           <title>NFT Minting Frame</title>
-          <meta property="fc:frame" content="vNext" />
-          <meta property="fc:frame:image" content="${IMAGE_URL}" />
-          <meta property="fc:frame:button:1" content="Mint NFT" />
-          <meta property="fc:frame:post_url" content="${postUrl}" />
+          <meta name="fc:frame" content="vNext" />
+          <meta name="fc:frame:image" content="${IMAGE_URL}" />
+          <meta name="og:image" content="${IMAGE_URL}" />
+          <meta name="og:title" content="NFT Minting Frame" />
+          <meta name="fc:frame:button:1" content="Mint NFT" />
+          <meta name="fc:frame:button:1:action" content="post" />
+          <meta name="fc:frame:post_url" content="${postUrl}" />
         </head>
         <body>
           <h1>Mint Your NFT</h1>
@@ -29,6 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).send(html);
   } else if (req.method === 'POST') {
     try {
+      console.log('Received POST request:', req.body);
       const { untrustedData } = req.body;
       const userFid = untrustedData?.fid;
       
@@ -36,18 +40,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         throw new Error("User FID not provided");
       }
 
+      console.log('Attempting to mint for FID:', userFid);
       const transactionHash = await performMint(userFid);
+      console.log('Minting successful. Transaction hash:', transactionHash);
 
       const html = `
         <!DOCTYPE html>
         <html>
           <head>
             <title>NFT Minted Successfully</title>
-            <meta property="fc:frame" content="vNext" />
-            <meta property="fc:frame:image" content="${IMAGE_URL}" />
-            <meta property="fc:frame:button:1" content="View Transaction" />
-            <meta property="fc:frame:button:2" content="Mint Another" />
-            <meta property="fc:frame:post_url" content="${postUrl}" />
+            <meta name="fc:frame" content="vNext" />
+            <meta name="fc:frame:image" content="${IMAGE_URL}" />
+            <meta name="og:image" content="${IMAGE_URL}" />
+            <meta name="og:title" content="NFT Minted Successfully" />
+            <meta name="fc:frame:button:1" content="View Transaction" />
+            <meta name="fc:frame:button:1:action" content="post" />
+            <meta name="fc:frame:button:2" content="Mint Another" />
+            <meta name="fc:frame:button:2:action" content="post" />
+            <meta name="fc:frame:post_url" content="${postUrl}" />
           </head>
           <body>
             <h1>NFT Minted Successfully!</h1>
@@ -65,10 +75,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         <html>
           <head>
             <title>Minting Error</title>
-            <meta property="fc:frame" content="vNext" />
-            <meta property="fc:frame:image" content="${IMAGE_URL}" />
-            <meta property="fc:frame:button:1" content="Try Again" />
-            <meta property="fc:frame:post_url" content="${postUrl}" />
+            <meta name="fc:frame" content="vNext" />
+            <meta name="fc:frame:image" content="${IMAGE_URL}" />
+            <meta name="og:image" content="${IMAGE_URL}" />
+            <meta name="og:title" content="Minting Error" />
+            <meta name="fc:frame:button:1" content="Try Again" />
+            <meta name="fc:frame:button:1:action" content="post" />
+            <meta name="fc:frame:post_url" content="${postUrl}" />
           </head>
           <body>
             <h1>Minting Error</h1>
@@ -86,16 +99,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 async function performMint(userFid: string) {
+  console.log('Initializing ThirdwebSDK');
   const sdk = new ThirdwebSDK(Base, {
     secretKey: process.env.THIRDWEB_SECRET_KEY,
   });
 
+  console.log('Getting contract');
   const contract = await sdk.getContract(CONTRACT_ADDRESS);
   
   // Convert FID to an Ethereum address (this is a simplified approach)
   const address = `0x${userFid.padStart(40, '0')}`;
+  console.log('Minting to address:', address);
   
   const mintResult = await contract.erc721.mint(address);
+  console.log('Mint result:', mintResult);
   return mintResult.receipt.transactionHash;
 }
 
