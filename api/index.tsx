@@ -1,10 +1,10 @@
-// pages/api/frame.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 import { BaseGoerli } from "@thirdweb-dev/chains";
 
-const IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmPajdnayjQgnbtLAXf1FyFL2tpZ7kDZBrqULB4XRLBWkb';
+// Define the contract address
 const CONTRACT_ADDRESS = '0x404240F00cDDC0070117e6D046Bf5D118A7E9641';
+const IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmPajdnayjQgnbtLAXf1FyFL2tpZ7kDZBrqULB4XRLBWkb';
 
 function getBaseUrl(req: NextApiRequest) {
   const host = req.headers.host || 'localhost:3000';
@@ -12,7 +12,6 @@ function getBaseUrl(req: NextApiRequest) {
   return `${protocol}://${host}`;
 }
 
-// Define the ABI for the mint function
 const mintABI = [
   {
     inputs: [
@@ -35,7 +34,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const postUrl = `${baseUrl}/api/frame`;
 
   if (req.method === 'GET') {
-    console.log('Handling GET request');
     const html = `
       <!DOCTYPE html>
       <html>
@@ -55,28 +53,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.setHeader('Content-Type', 'text/html');
     return res.status(200).send(html);
   } else if (req.method === 'POST') {
-    console.log('Handling POST request');
-    console.log('Request body:', JSON.stringify(req.body, null, 2));
-    
     try {
-      console.log('Initializing ThirdwebSDK');
       if (!process.env.PRIVATE_KEY) {
         throw new Error('PRIVATE_KEY is not set in environment variables');
       }
       const sdk = ThirdwebSDK.fromPrivateKey(process.env.PRIVATE_KEY, BaseGoerli);
-      
-      console.log('Getting contract');
       const contract = await sdk.getContract(CONTRACT_ADDRESS, mintABI);
-      
-      console.log('Extracting address from request body');
       const address = req.body?.untrustedData?.fid ? `fid:${req.body.untrustedData.fid}` : 'unknown';
-      console.log(`Minting to address: ${address}`);
-      
-      console.log('Minting NFT');
       const mintResult = await contract.call("mint", [address]);
-      console.log('Mint result:', JSON.stringify(mintResult, null, 2));
       const transactionHash = mintResult.receipt.transactionHash;
-      console.log(`Minted successfully. Transaction hash: ${transactionHash}`);
 
       const html = `
         <!DOCTYPE html>
@@ -99,9 +84,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.setHeader('Content-Type', 'text/html');
       return res.status(200).send(html);
     } catch (error) {
-      console.error('Error minting NFT:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Detailed error:', JSON.stringify(error, null, 2));
       const html = `
         <!DOCTYPE html>
         <html>
@@ -123,8 +106,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).send(html);
     }
   } else {
-    console.log(`Unsupported method: ${req.method}`);
     res.setHeader('Allow', ['GET', 'POST']);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
+
+async function getAdminRole() {
+  try {
+    const sdk = ThirdwebSDK.fromPrivateKey(process.env.PRIVATE_KEY!, BaseGoerli);
+    const contract = await sdk.getContract(CONTRACT_ADDRESS);
+    const adminRole = await contract.call("DEFAULT_ADMIN_ROLE");
+    console.log('Admin Role:', adminRole);
+    return adminRole;
+  } catch (error) {
+    console.error('Error fetching admin role:', error);
+  }
+}
+
+getAdminRole();
