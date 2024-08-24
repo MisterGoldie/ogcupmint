@@ -34,15 +34,8 @@ async function initializeSDK() {
 initializeSDK().catch(console.error);
 
 app.frame('/', (c) => {
-  const imageJsx = (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', backgroundColor: '#f0f0f0', fontFamily: 'Arial, sans-serif' }}>
-      <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>NFT Minting Frame</h1>
-      <p style={{ fontSize: '24px', marginBottom: '30px' }}>Click the button below to mint your NFT!</p>
-    </div>
-  );
-
   return c.res({
-    image: imageJsx,
+    image: 'https://example.com/nft-minting-frame.png', // Replace with your actual image URL
     intents: [
       <Button action="mint">Mint NFT</Button>
     ],
@@ -59,16 +52,8 @@ app.frame('/mint', async (c) => {
     const mintResult = await contract.erc721.mint(address);
     const tokenId = mintResult.id;
 
-    const successImageJsx = (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', backgroundColor: '#e6ffe6', fontFamily: 'Arial, sans-serif' }}>
-        <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>NFT Minted Successfully!</h1>
-        <p style={{ fontSize: '24px', marginBottom: '15px' }}>Congratulations! Your NFT has been minted.</p>
-        <p style={{ fontSize: '20px' }}>Token ID: {tokenId}</p>
-      </div>
-    );
-
     return c.res({
-      image: successImageJsx,
+      image: 'https://example.com/nft-minted-success.png', // Replace with your actual success image URL
       intents: [
         <Button action="/">Mint Another</Button>
       ],
@@ -79,15 +64,8 @@ app.frame('/mint', async (c) => {
       console.error('Error details:', JSON.stringify(error, null, 2));
     }
 
-    const errorImageJsx = (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', backgroundColor: '#ffe6e6', fontFamily: 'Arial, sans-serif' }}>
-        <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>Minting Failed</h1>
-        <p style={{ fontSize: '24px' }}>Sorry, there was an error while minting your NFT. Please try again.</p>
-      </div>
-    );
-
     return c.res({
-      image: errorImageJsx,
+      image: 'https://example.com/nft-minting-error.png', // Replace with your actual error image URL
       intents: [
         <Button action="/">Try Again</Button>
       ],
