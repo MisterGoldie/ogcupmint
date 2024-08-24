@@ -43,7 +43,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     try {
       console.log('Initializing ThirdwebSDK');
-      const sdk = ThirdwebSDK.fromPrivateKey(process.env.PRIVATE_KEY!, BaseGoerli);
+      if (!process.env.PRIVATE_KEY) {
+        throw new Error('PRIVATE_KEY is not set in environment variables');
+      }
+      const sdk = ThirdwebSDK.fromPrivateKey(process.env.PRIVATE_KEY, BaseGoerli);
       
       console.log('Getting contract');
       const contract = await sdk.getContract(CONTRACT_ADDRESS);
@@ -95,7 +98,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           </head>
           <body>
             <h1>Minting Failed</h1>
-            <p>An error occurred while minting the NFT: ${errorMessage}</p>
+            <p>Error: ${errorMessage}</p>
           </body>
         </html>
       `;
