@@ -31,15 +31,12 @@ async function initializeSDK() {
 const contract = initializeSDK().catch(console.error);
 
 const STATIC_IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmYmLrfR3R67ZUfcFpo8DvnEoKnRqRv3gY9oRbsrnP7UZm';
-const ERROR_IMAGE_URL = 'https://example.com/error.png'; // Replace with your actual error image URL
-const SUCCESS_IMAGE_URL = 'https://example.com/success.png'; // Replace with your actual success image URL
-const REDIRECT_IMAGE_URL = 'https://example.com/redirect.png'; // Replace with your actual redirect image URL
 
 app.frame('/', (c) => {
   return c.res({
     image: STATIC_IMAGE_URL,
     intents: [
-      <Button action="mint">Mint NFT</Button>
+      <Button action="post">Mint NFT</Button>
     ],
   });
 });
@@ -48,55 +45,31 @@ app.frame('/mint', async (c) => {
   const contractInstance = await contract;
   if (!contractInstance) {
     return c.res({
-      image: ERROR_IMAGE_URL,
+      image: STATIC_IMAGE_URL,
       intents: [
-        <Button action="retry">Try Again</Button>
+        <Button action="post">Try Again</Button>
       ],
     });
   }
 
   try {
     const address = c.frameData?.fid ? `fid:${c.frameData.fid}` : 'unknown';
-    const mintResult = await contractInstance.erc721.mint(address);
-    const transactionHash = mintResult.receipt.transactionHash;
-
+    await contractInstance.erc721.mint(address);
+    
     return c.res({
-      image: SUCCESS_IMAGE_URL,
+      image: STATIC_IMAGE_URL,
       intents: [
-        <Button action={`view_transaction:${transactionHash}`}>View Transaction</Button>,
-        <Button action="mint">Mint Another</Button>
+        <Button action="post">View Transaction</Button>,
+        <Button action="post">Mint Another</Button>
       ],
     });
   } catch (error) {
     console.error('Error minting NFT:', error);
-
+    
     return c.res({
-      image: ERROR_IMAGE_URL,
+      image: STATIC_IMAGE_URL,
       intents: [
-        <Button action="retry">Try Again</Button>
-      ],
-    });
-  }
-});
-
-app.frame('/view-transaction', (c) => {
-  const action = c.buttonValue;
-  const txHash = action?.startsWith('view_transaction:') ? action.split(':')[1] : null;
-
-  if (txHash) {
-    const url = `https://basescan.org/tx/${txHash}`;
-    return c.res({
-      image: REDIRECT_IMAGE_URL,
-      intents: [
-        <Button action="link" value={url}>Open in Browser</Button>,
-        <Button action="mint">Back to Minting</Button>
-      ],
-    });
-  } else {
-    return c.res({
-      image: ERROR_IMAGE_URL,
-      intents: [
-        <Button action="mint">Back to Minting</Button>
+        <Button action="post">Try Again</Button>
       ],
     });
   }
