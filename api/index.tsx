@@ -3,8 +3,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { ThirdwebSDK } from '@thirdweb-dev/sdk';
 import { BaseGoerli } from '@thirdweb-dev/chains';
 
-// Using a placeholder image service
-const SQUARE_IMAGE_URL = 'https://placehold.co/1200x1200/png';
+// Using a reliable placeholder image from Imgur
+const SQUARE_IMAGE_URL = 'https://i.imgur.com/QgRghp2.png';
 const CONTRACT_ADDRESS = '0x404240F00cDDC0070117e6D046Bf5D118A7E9641';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
