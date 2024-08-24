@@ -52,12 +52,12 @@ app.frame('/mint', async (c) => {
   try {
     const address = c.frameData?.fid ? `fid:${c.frameData.fid}` : 'unknown';
     const mintResult = await contract.erc721.mint(address);
-    const tokenId = mintResult.id;
+    const tokenId = mintResult.id.toString(); // Convert BigNumber to string
 
     return c.res({
       image: STATIC_IMAGE_URL,
       intents: [
-        <Button action="/">Mint Another</Button>
+        <Button action="/">Mint Another (Last Minted: #{tokenId})</Button>
       ],
     });
   } catch (error) {
