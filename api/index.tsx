@@ -6,7 +6,17 @@ import { BaseGoerli } from '@thirdweb-dev/chains';
 const IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmPajdnayjQgnbtLAXf1FyFL2tpZ7kDZBrqULB4XRLBWkb';
 const CONTRACT_ADDRESS = '0x404240F00cDDC0070117e6D046Bf5D118A7E9641';
 
+// Fallback function to get the base URL
+function getBaseUrl(req: NextApiRequest) {
+  const host = req.headers.host || 'localhost:3000';
+  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+  return `${protocol}://${host}`;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const baseUrl = process.env.NEXT_PUBLIC_URL || getBaseUrl(req);
+  const postUrl = `${baseUrl}/api/frame`;
+
   if (req.method === 'GET') {
     // Initial frame
     const html = `
@@ -18,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           <meta property="fc:frame" content="vNext" />
           <meta property="fc:frame:image" content="${IMAGE_URL}" />
           <meta property="fc:frame:button:1" content="Mint NFT" />
-          <meta property="fc:frame:post_url" content="${process.env.NEXT_PUBLIC_URL}/api/frame" />
+          <meta property="fc:frame:post_url" content="${postUrl}" />
         </head>
         <body>
           <h1>NFT Minting Frame</h1>
@@ -47,7 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             <meta property="fc:frame:image" content="${IMAGE_URL}" />
             <meta property="fc:frame:button:1" content="View Transaction" />
             <meta property="fc:frame:button:2" content="Mint Another" />
-            <meta property="fc:frame:post_url" content="${process.env.NEXT_PUBLIC_URL}/api/frame" />
+            <meta property="fc:frame:post_url" content="${postUrl}" />
           </head>
           <body>
             <h1>NFT Minted Successfully</h1>
@@ -68,7 +78,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             <meta property="fc:frame" content="vNext" />
             <meta property="fc:frame:image" content="${IMAGE_URL}" />
             <meta property="fc:frame:button:1" content="Try Again" />
-            <meta property="fc:frame:post_url" content="${process.env.NEXT_PUBLIC_URL}/api/frame" />
+            <meta property="fc:frame:post_url" content="${postUrl}" />
           </head>
           <body>
             <h1>Minting Failed</h1>
