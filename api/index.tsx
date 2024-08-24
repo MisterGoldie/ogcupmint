@@ -1,5 +1,3 @@
-// @ts-ignore
-import React from 'react';
 import { Frog, Button } from 'frog';
 import { ThirdwebSDK } from '@thirdweb-dev/sdk';
 import { BaseGoerli } from '@thirdweb-dev/chains';
@@ -39,7 +37,7 @@ app.frame('/', (c) => {
   return c.res({
     image: STATIC_IMAGE_URL,
     intents: [
-      <Button action="mint">Mint NFT</Button>
+      <Button action="mint">Mint NFT</Button>,
     ],
   });
 });
@@ -57,7 +55,7 @@ app.frame('/mint', async (c) => {
     return c.res({
       image: STATIC_IMAGE_URL,
       intents: [
-        <Button action="/">Mint Another (Last Minted: #{tokenId})</Button>
+        <Button action="/">Mint Another (Last Minted: #{tokenId})</Button>,
       ],
     });
   } catch (error) {
@@ -69,7 +67,7 @@ app.frame('/mint', async (c) => {
     return c.res({
       image: STATIC_IMAGE_URL,
       intents: [
-        <Button action="/">Try Again</Button>
+        <Button action="/">Try Again</Button>,
       ],
     });
   }
