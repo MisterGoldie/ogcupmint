@@ -3,8 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { ThirdwebSDK } from '@thirdweb-dev/sdk';
 import { BaseGoerli } from '@thirdweb-dev/chains';
 
-// Using a reliable placeholder image from Imgur
-const SQUARE_IMAGE_URL = 'https://i.imgur.com/QgRghp2.png';
+const IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmPajdnayjQgnbtLAXf1FyFL2tpZ7kDZBrqULB4XRLBWkb';
 const CONTRACT_ADDRESS = '0x404240F00cDDC0070117e6D046Bf5D118A7E9641';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -15,12 +14,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       <html>
         <head>
           <title>NFT Minting Frame</title>
-          <meta property="og:image" content="${SQUARE_IMAGE_URL}" />
-          <meta property="og:image:width" content="1200" />
-          <meta property="og:image:height" content="1200" />
+          <meta property="og:image" content="${IMAGE_URL}" />
           <meta property="fc:frame" content="vNext" />
-          <meta property="fc:frame:image" content="${SQUARE_IMAGE_URL}" />
-          <meta property="fc:frame:image:aspect_ratio" content="1:1" />
+          <meta property="fc:frame:image" content="${IMAGE_URL}" />
           <meta property="fc:frame:button:1" content="Mint NFT" />
           <meta property="fc:frame:post_url" content="${process.env.NEXT_PUBLIC_URL}/api/frame" />
         </head>
@@ -46,12 +42,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         <html>
           <head>
             <title>NFT Minted Successfully</title>
-            <meta property="og:image" content="${SQUARE_IMAGE_URL}" />
-            <meta property="og:image:width" content="1200" />
-            <meta property="og:image:height" content="1200" />
+            <meta property="og:image" content="${IMAGE_URL}" />
             <meta property="fc:frame" content="vNext" />
-            <meta property="fc:frame:image" content="${SQUARE_IMAGE_URL}" />
-            <meta property="fc:frame:image:aspect_ratio" content="1:1" />
+            <meta property="fc:frame:image" content="${IMAGE_URL}" />
             <meta property="fc:frame:button:1" content="View Transaction" />
             <meta property="fc:frame:button:2" content="Mint Another" />
             <meta property="fc:frame:post_url" content="${process.env.NEXT_PUBLIC_URL}/api/frame" />
@@ -71,12 +64,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         <html>
           <head>
             <title>Minting Failed</title>
-            <meta property="og:image" content="${SQUARE_IMAGE_URL}" />
-            <meta property="og:image:width" content="1200" />
-            <meta property="og:image:height" content="1200" />
+            <meta property="og:image" content="${IMAGE_URL}" />
             <meta property="fc:frame" content="vNext" />
-            <meta property="fc:frame:image" content="${SQUARE_IMAGE_URL}" />
-            <meta property="fc:frame:image:aspect_ratio" content="1:1" />
+            <meta property="fc:frame:image" content="${IMAGE_URL}" />
             <meta property="fc:frame:button:1" content="Try Again" />
             <meta property="fc:frame:post_url" content="${process.env.NEXT_PUBLIC_URL}/api/frame" />
           </head>
