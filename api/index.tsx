@@ -17,39 +17,67 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           <title>NFT Minting Frame</title>
           <meta property="fc:frame" content="vNext" />
           <meta property="fc:frame:image" content="${IMAGE_URL}" />
-          <meta property="fc:frame:button:1" content="Start Minting Process" />
+          <meta property="fc:frame:button:1" content="Mint NFT" />
           <meta property="fc:frame:post_url" content="${postUrl}" />
         </head>
         <body>
-          <h1>Start NFT Minting Process</h1>
+          <h1>Mint Your NFT</h1>
         </body>
       </html>
     `;
     res.setHeader('Content-Type', 'text/html');
     return res.status(200).send(html);
   } else if (req.method === 'POST') {
-    const { untrustedData } = req.body;
-    const step = req.query.step || 'start';
+    try {
+      const { untrustedData } = req.body;
+      const userFid = untrustedData?.fid;
+      
+      if (!userFid) {
+        throw new Error("User FID not provided");
+      }
 
-    switch (step) {
-      case 'start':
-        return res.status(200).send(getConfirmationHtml(postUrl));
-      case 'confirm':
-        return res.status(200).send(getAddressInputHtml(postUrl));
-      case 'mint':
-        const address = untrustedData?.inputText;
-        if (!address) {
-          return res.status(200).send(getErrorHtml("No address provided", postUrl));
-        }
-        try {
-          const result = await performMint(address);
-          return res.status(200).send(getSuccessHtml(result, postUrl));
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-          return res.status(200).send(getErrorHtml(errorMessage, postUrl));
-        }
-      default:
-        return res.status(400).send("Invalid step");
+      const transactionHash = await performMint(userFid);
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>NFT Minted Successfully</title>
+            <meta property="fc:frame" content="vNext" />
+            <meta property="fc:frame:image" content="${IMAGE_URL}" />
+            <meta property="fc:frame:button:1" content="View Transaction" />
+            <meta property="fc:frame:button:2" content="Mint Another" />
+            <meta property="fc:frame:post_url" content="${postUrl}" />
+          </head>
+          <body>
+            <h1>NFT Minted Successfully!</h1>
+            <p>Transaction Hash: ${transactionHash}</p>
+          </body>
+        </html>
+      `;
+      res.setHeader('Content-Type', 'text/html');
+      return res.status(200).send(html);
+    } catch (error) {
+      console.error('Error minting NFT:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Minting Error</title>
+            <meta property="fc:frame" content="vNext" />
+            <meta property="fc:frame:image" content="${IMAGE_URL}" />
+            <meta property="fc:frame:button:1" content="Try Again" />
+            <meta property="fc:frame:post_url" content="${postUrl}" />
+          </head>
+          <body>
+            <h1>Minting Error</h1>
+            <p>${errorMessage}</p>
+          </body>
+        </html>
+      `;
+      res.setHeader('Content-Type', 'text/html');
+      return res.status(200).send(html);
     }
   } else {
     res.setHeader('Allow', ['GET', 'POST']);
@@ -57,91 +85,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function getConfirmationHtml(postUrl: string) {
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>Confirm Minting</title>
-        <meta property="fc:frame" content="vNext" />
-        <meta property="fc:frame:image" content="${IMAGE_URL}" />
-        <meta property="fc:frame:button:1" content="Confirm Minting" />
-        <meta property="fc:frame:button:2" content="Cancel" />
-        <meta property="fc:frame:post_url" content="${postUrl}?step=confirm" />
-      </head>
-      <body>
-        <h1>Confirm NFT Minting</h1>
-      </body>
-    </html>
-  `;
-}
-
-function getAddressInputHtml(postUrl: string) {
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>Enter Ethereum Address</title>
-        <meta property="fc:frame" content="vNext" />
-        <meta property="fc:frame:image" content="${IMAGE_URL}" />
-        <meta property="fc:frame:input:text" content="Enter your Ethereum address" />
-        <meta property="fc:frame:button:1" content="Mint NFT" />
-        <meta property="fc:frame:post_url" content="${postUrl}?step=mint" />
-      </head>
-      <body>
-        <h1>Enter Your Ethereum Address</h1>
-      </body>
-    </html>
-  `;
-}
-
-async function performMint(address: string) {
+async function performMint(userFid: string) {
   const sdk = new ThirdwebSDK(Base, {
     secretKey: process.env.THIRDWEB_SECRET_KEY,
   });
 
   const contract = await sdk.getContract(CONTRACT_ADDRESS);
+  
+  // Convert FID to an Ethereum address (this is a simplified approach)
+  const address = `0x${userFid.padStart(40, '0')}`;
+  
   const mintResult = await contract.erc721.mint(address);
   return mintResult.receipt.transactionHash;
-}
-
-function getSuccessHtml(transactionHash: string, postUrl: string) {
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>NFT Minted Successfully</title>
-        <meta property="fc:frame" content="vNext" />
-        <meta property="fc:frame:image" content="${IMAGE_URL}" />
-        <meta property="fc:frame:button:1" content="View Transaction" />
-        <meta property="fc:frame:button:2" content="Mint Another" />
-        <meta property="fc:frame:post_url" content="${postUrl}" />
-      </head>
-      <body>
-        <h1>NFT Minted Successfully!</h1>
-        <p>Transaction Hash: ${transactionHash}</p>
-      </body>
-    </html>
-  `;
-}
-
-function getErrorHtml(errorMessage: string, postUrl: string) {
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>Minting Error</title>
-        <meta property="fc:frame" content="vNext" />
-        <meta property="fc:frame:image" content="${IMAGE_URL}" />
-        <meta property="fc:frame:button:1" content="Try Again" />
-        <meta property="fc:frame:post_url" content="${postUrl}" />
-      </head>
-      <body>
-        <h1>Minting Error</h1>
-        <p>${errorMessage}</p>
-      </body>
-    </html>
-  `;
 }
 
 function getBaseUrl(req: NextApiRequest): string {
