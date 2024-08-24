@@ -1,114 +1,86 @@
-import { Frog, Button } from 'frog';
+// pages/api/frame.ts
+import { NextApiRequest, NextApiResponse } from 'next';
 import { ThirdwebSDK } from '@thirdweb-dev/sdk';
 import { BaseGoerli } from '@thirdweb-dev/chains';
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config();
-
-const app = new Frog({
-  basePath: '/',
-  title: 'NFT Minting Frame',
-});
-
-let sdk: ThirdwebSDK;
-
-async function initializeSDK() {
-  if (!process.env.PRIVATE_KEY) {
-    throw new Error('PRIVATE_KEY environment variable is not set');
-  }
-  
-  sdk = ThirdwebSDK.fromPrivateKey(
-    process.env.PRIVATE_KEY,
-    BaseGoerli
-  );
-  
-  const contractAddress = '0x404240F00cDDC0070117e6D046Bf5D118A7E9641';
-  return await sdk.getContract(contractAddress);
-}
-
-// Initialize SDK before defining routes
-const contract = initializeSDK().catch(console.error);
 
 const STATIC_IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmYmLrfR3R67ZUfcFpo8DvnEoKnRqRv3gY9oRbsrnP7UZm';
+const CONTRACT_ADDRESS = '0x404240F00cDDC0070117e6D046Bf5D118A7E9641';
 
-app.frame('/', (c) => {
-  return c.res({
-    image: `
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method === 'GET') {
+    // Initial frame
+    const html = `
+      <!DOCTYPE html>
       <html>
         <head>
           <title>NFT Minting Frame</title>
+          <meta property="og:image" content="${STATIC_IMAGE_URL}" />
           <meta property="fc:frame" content="vNext" />
           <meta property="fc:frame:image" content="${STATIC_IMAGE_URL}" />
-          <meta property="og:image" content="${STATIC_IMAGE_URL}" />
+          <meta property="fc:frame:button:1" content="Mint NFT" />
+          <meta property="fc:frame:post_url" content="${process.env.NEXT_PUBLIC_URL}/api/frame" />
         </head>
+        <body>
+          <h1>NFT Minting Frame</h1>
+        </body>
       </html>
-    `,
-    intents: [
-      <Button value="mint">Mint NFT</Button>
-    ],
-  });
-});
+    `;
+    res.setHeader('Content-Type', 'text/html');
+    return res.status(200).send(html);
+  } else if (req.method === 'POST') {
+    // Handle minting
+    try {
+      const sdk = ThirdwebSDK.fromPrivateKey(process.env.PRIVATE_KEY!, BaseGoerli);
+      const contract = await sdk.getContract(CONTRACT_ADDRESS);
+      
+      const address = req.body?.untrustedData?.fid ? `fid:${req.body.untrustedData.fid}` : 'unknown';
+      const mintResult = await contract.erc721.mint(address);
+      const transactionHash = mintResult.receipt.transactionHash;
 
-app.frame('/mint', async (c) => {
-  const contractInstance = await contract;
-  if (!contractInstance) {
-    return c.res({
-      image: `
+      const html = `
+        <!DOCTYPE html>
         <html>
           <head>
-            <title>NFT Minting Frame - Error</title>
+            <title>NFT Minted Successfully</title>
+            <meta property="og:image" content="${STATIC_IMAGE_URL}" />
             <meta property="fc:frame" content="vNext" />
             <meta property="fc:frame:image" content="${STATIC_IMAGE_URL}" />
-            <meta property="og:image" content="${STATIC_IMAGE_URL}" />
+            <meta property="fc:frame:button:1" content="View Transaction" />
+            <meta property="fc:frame:button:2" content="Mint Another" />
+            <meta property="fc:frame:post_url" content="${process.env.NEXT_PUBLIC_URL}/api/frame" />
           </head>
+          <body>
+            <h1>NFT Minted Successfully</h1>
+            <p>Transaction Hash: ${transactionHash}</p>
+          </body>
         </html>
-      `,
-      intents: [
-        <Button value="retry">Try Again</Button>
-      ],
-    });
+      `;
+      res.setHeader('Content-Type', 'text/html');
+      return res.status(200).send(html);
+    } catch (error) {
+      console.error('Error minting NFT:', error);
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Minting Failed</title>
+            <meta property="og:image" content="${STATIC_IMAGE_URL}" />
+            <meta property="fc:frame" content="vNext" />
+            <meta property="fc:frame:image" content="${STATIC_IMAGE_URL}" />
+            <meta property="fc:frame:button:1" content="Try Again" />
+            <meta property="fc:frame:post_url" content="${process.env.NEXT_PUBLIC_URL}/api/frame" />
+          </head>
+          <body>
+            <h1>Minting Failed</h1>
+            <p>An error occurred while minting the NFT. Please try again.</p>
+          </body>
+        </html>
+      `;
+      res.setHeader('Content-Type', 'text/html');
+      return res.status(200).send(html);
+    }
+  } else {
+    res.setHeader('Allow', ['GET', 'POST']);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
-
-  try {
-    const address = c.frameData?.fid ? `fid:${c.frameData.fid}` : 'unknown';
-    await contractInstance.erc721.mint(address);
-    
-    return c.res({
-      image: `
-        <html>
-          <head>
-            <title>NFT Minting Frame - Success</title>
-            <meta property="fc:frame" content="vNext" />
-            <meta property="fc:frame:image" content="${STATIC_IMAGE_URL}" />
-            <meta property="og:image" content="${STATIC_IMAGE_URL}" />
-          </head>
-        </html>
-      `,
-      intents: [
-        <Button value="view">View Transaction</Button>,
-        <Button value="mint">Mint Another</Button>
-      ],
-    });
-  } catch (error) {
-    console.error('Error minting NFT:', error);
-    
-    return c.res({
-      image: `
-        <html>
-          <head>
-            <title>NFT Minting Frame - Error</title>
-            <meta property="fc:frame" content="vNext" />
-            <meta property="fc:frame:image" content="${STATIC_IMAGE_URL}" />
-            <meta property="og:image" content="${STATIC_IMAGE_URL}" />
-          </head>
-        </html>
-      `,
-      intents: [
-        <Button value="retry">Try Again</Button>
-      ],
-    });
-  }
-});
-
-export default app;
+}
