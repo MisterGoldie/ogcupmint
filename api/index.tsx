@@ -6,7 +6,6 @@ import { BaseGoerli } from '@thirdweb-dev/chains';
 const IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmPajdnayjQgnbtLAXf1FyFL2tpZ7kDZBrqULB4XRLBWkb';
 const CONTRACT_ADDRESS = '0x404240F00cDDC0070117e6D046Bf5D118A7E9641';
 
-// Fallback function to get the base URL
 function getBaseUrl(req: NextApiRequest) {
   const host = req.headers.host || 'localhost:3000';
   const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
@@ -14,11 +13,12 @@ function getBaseUrl(req: NextApiRequest) {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log(`Received ${req.method} request to /api/frame`);
   const baseUrl = process.env.NEXT_PUBLIC_URL || getBaseUrl(req);
   const postUrl = `${baseUrl}/api/frame`;
 
   if (req.method === 'GET') {
-    // Initial frame
+    console.log('Handling GET request');
     const html = `
       <!DOCTYPE html>
       <html>
@@ -38,14 +38,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.setHeader('Content-Type', 'text/html');
     return res.status(200).send(html);
   } else if (req.method === 'POST') {
-    // Handle minting
+    console.log('Handling POST request');
     try {
+      console.log('Initializing ThirdwebSDK');
       const sdk = ThirdwebSDK.fromPrivateKey(process.env.PRIVATE_KEY!, BaseGoerli);
+      
+      console.log('Getting contract');
       const contract = await sdk.getContract(CONTRACT_ADDRESS);
       
+      console.log('Extracting address from request body');
       const address = req.body?.untrustedData?.fid ? `fid:${req.body.untrustedData.fid}` : 'unknown';
+      console.log(`Minting to address: ${address}`);
+      
+      console.log('Minting NFT');
       const mintResult = await contract.erc721.mint(address);
       const transactionHash = mintResult.receipt.transactionHash;
+      console.log(`Minted successfully. Transaction hash: ${transactionHash}`);
 
       const html = `
         <!DOCTYPE html>
@@ -69,6 +77,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).send(html);
     } catch (error) {
       console.error('Error minting NFT:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       const html = `
         <!DOCTYPE html>
         <html>
@@ -82,7 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           </head>
           <body>
             <h1>Minting Failed</h1>
-            <p>An error occurred while minting the NFT. Please try again.</p>
+            <p>An error occurred while minting the NFT: ${errorMessage}</p>
           </body>
         </html>
       `;
@@ -90,6 +99,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).send(html);
     }
   } else {
+    console.log(`Unsupported method: ${req.method}`);
     res.setHeader('Allow', ['GET', 'POST']);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
