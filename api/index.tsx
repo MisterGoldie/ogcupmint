@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
-// Define the IMAGE_URL constant
 const IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmPajdnayjQgnbtLAXf1FyFL2tpZ7kDZBrqULB4XRLBWkb';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -36,10 +35,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     `;
     res.setHeader('Content-Type', 'text/html');
     return res.status(200).send(html);
+  } else if (req.method === 'POST') {
+    console.log('Handling POST request');
+    // Insert your POST request logic here
+    // Example: You could respond with a success message or handle data processing
+    return res.status(200).json({ message: 'POST request handled successfully' });
   } else {
     console.log(`Unsupported method: ${req.method}`);
-    res.setHeader('Allow', ['GET']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+    res.setHeader('Allow', ['GET', 'POST']);
+    return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
 
