@@ -12,7 +12,6 @@ const app = new Frog({
 });
 
 let sdk: ThirdwebSDK;
-let contract: Awaited<ReturnType<typeof ThirdwebSDK.prototype.getContract>>;
 
 async function initializeSDK() {
   if (!process.env.PRIVATE_KEY) {
@@ -25,49 +24,78 @@ async function initializeSDK() {
   );
   
   const contractAddress = '0x404240F00cDDC0070117e6D046Bf5D118A7E9641';
-  contract = await sdk.getContract(contractAddress);
+  return await sdk.getContract(contractAddress);
 }
 
 // Initialize SDK before defining routes
-initializeSDK().catch(console.error);
+const contract = initializeSDK().catch(console.error);
 
 const STATIC_IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmYmLrfR3R67ZUfcFpo8DvnEoKnRqRv3gY9oRbsrnP7UZm';
+const NEXT_PUBLIC_URL = 'https://ogcupmint.vercel.app';
 
 app.frame('/', (c) => {
   return c.res({
     image: STATIC_IMAGE_URL,
     intents: [
-      <Button action="mint">Mint NFT</Button>,
+      <Button action="mint">Mint NFT</Button>
     ],
   });
 });
 
 app.frame('/mint', async (c) => {
-  if (!contract) {
-    throw new Error('Contract not initialized');
+  const contractInstance = await contract;
+  if (!contractInstance) {
+    return c.res({
+      image: `${NEXT_PUBLIC_URL}/api/images/error`,
+      intents: [
+        <Button action="retry">Try Again</Button>
+      ],
+    });
   }
 
   try {
     const address = c.frameData?.fid ? `fid:${c.frameData.fid}` : 'unknown';
-    const mintResult = await contract.erc721.mint(address);
-    const tokenId = mintResult.id.toString(); // Convert BigNumber to string
+    const mintResult = await contractInstance.erc721.mint(address);
+    const tokenId = mintResult.id.toString();
+    const transactionHash = mintResult.receipt.transactionHash;
 
     return c.res({
-      image: STATIC_IMAGE_URL,
+      image: `${NEXT_PUBLIC_URL}/api/images/success?tokenId=${tokenId}`,
       intents: [
-        <Button action="/">Mint Another (Last Minted: #{tokenId})</Button>,
+        <Button action={`view_transaction:${transactionHash}`}>View Transaction</Button>,
+        <Button action="mint">Mint Another</Button>
       ],
     });
   } catch (error) {
     console.error('Error minting NFT:', error);
-    if (error && typeof error === 'object') {
-      console.error('Error details:', JSON.stringify(error, null, 2));
-    }
 
     return c.res({
-      image: STATIC_IMAGE_URL,
+      image: `${NEXT_PUBLIC_URL}/api/images/error`,
       intents: [
-        <Button action="/">Try Again</Button>,
+        <Button action="retry">Try Again</Button>
+      ],
+    });
+  }
+});
+
+app.frame('/view-transaction', (c) => {
+  const action = c.buttonValue;
+  const txHash = action?.startsWith('view_transaction:') ? action.split(':')[1] : null;
+
+  if (txHash) {
+    const url = `https://basescan.org/tx/${txHash}`;
+    return c.res({
+      image: `${NEXT_PUBLIC_URL}/api/images/redirect?url=${encodeURIComponent(url)}`,
+      intents: [
+        <Button action="link" value={url}>Open in Browser</Button>,
+        <Button action="mint">Back to Minting</Button>
+      ],
+    });
+  } else {
+    return c.res({
+      image: `${NEXT_PUBLIC_URL}/api/images/error`,
+      intents: [
+        <Button action="mint">Back to Minting</Button>
       ],
     });
   }
