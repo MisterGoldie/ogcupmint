@@ -67,7 +67,7 @@ app.frame('/mint', async (c) => {
     return c.res({
       image: 'https://example.com/nft-minting-error.png', // Replace with your actual error image URL
       intents: [
-        <Button action="/">Try Again</Button>
+        <Button action="/">Try again</Button>
       ],
     });
   }
