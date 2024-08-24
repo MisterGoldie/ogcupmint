@@ -2,8 +2,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 import { BaseGoerli } from "@thirdweb-dev/chains";
-import "@thirdweb-dev/contracts/extension/PlatformFee.sol";
-
 
 const IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmPajdnayjQgnbtLAXf1FyFL2tpZ7kDZBrqULB4XRLBWkb';
 const CONTRACT_ADDRESS = '0x404240F00cDDC0070117e6D046Bf5D118A7E9641';
