@@ -3,7 +3,6 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { ThirdwebSDK } from '@thirdweb-dev/sdk';
 import { BaseGoerli } from '@thirdweb-dev/chains';
 
-// Using the correct IPFS image link provided
 const IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmPajdnayjQgnbtLAXf1FyFL2tpZ7kDZBrqULB4XRLBWkb';
 const CONTRACT_ADDRESS = '0x404240F00cDDC0070117e6D046Bf5D118A7E9641';
 
@@ -55,6 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       console.log('Minting NFT');
       const mintResult = await contract.erc721.mint(address);
+      console.log('Mint result:', JSON.stringify(mintResult, null, 2));
       const transactionHash = mintResult.receipt.transactionHash;
       console.log(`Minted successfully. Transaction hash: ${transactionHash}`);
 
@@ -81,6 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } catch (error) {
       console.error('Error minting NFT:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Detailed error:', JSON.stringify(error, null, 2));
       const html = `
         <!DOCTYPE html>
         <html>
