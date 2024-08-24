@@ -33,21 +33,14 @@ async function initializeSDK() {
 // Initialize SDK before defining routes
 initializeSDK().catch(console.error);
 
-function createDataUrl(html: string): string {
-  const encodedHtml = encodeURIComponent(html);
-  return `data:text/html;charset=utf-8,${encodedHtml}`;
+function createPlaceholderImage(text: string): string {
+  const encodedText = encodeURIComponent(text);
+  return `https://via.placeholder.com/1146x600.png?text=${encodedText}`;
 }
 
 app.frame('/', (c) => {
-  const html = `
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background-color:#f0f0f0;font-family:Arial,sans-serif;">
-      <h1 style="font-size:48px;margin-bottom:20px;">NFT Minting Frame</h1>
-      <p style="font-size:24px;margin-bottom:30px;">Click the button below to mint your NFT!</p>
-    </div>
-  `;
-
   return c.res({
-    image: createDataUrl(html),
+    image: createPlaceholderImage('NFT Minting Frame\nClick the button below to mint your NFT!'),
     intents: [
       <Button action="mint">Mint NFT</Button>
     ],
@@ -64,16 +57,8 @@ app.frame('/mint', async (c) => {
     const mintResult = await contract.erc721.mint(address);
     const tokenId = mintResult.id;
 
-    const html = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background-color:#e6ffe6;font-family:Arial,sans-serif;">
-        <h1 style="font-size:48px;margin-bottom:20px;">NFT Minted Successfully!</h1>
-        <p style="font-size:24px;margin-bottom:15px;">Congratulations! Your NFT has been minted.</p>
-        <p style="font-size:20px;">Token ID: ${tokenId}</p>
-      </div>
-    `;
-
     return c.res({
-      image: createDataUrl(html),
+      image: createPlaceholderImage(`NFT Minted Successfully!\nCongratulations! Your NFT has been minted.\nToken ID: ${tokenId}`),
       intents: [
         <Button action="/">Mint Another</Button>
       ],
@@ -84,15 +69,8 @@ app.frame('/mint', async (c) => {
       console.error('Error details:', JSON.stringify(error, null, 2));
     }
 
-    const html = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background-color:#ffe6e6;font-family:Arial,sans-serif;">
-        <h1 style="font-size:48px;margin-bottom:20px;">Minting Failed</h1>
-        <p style="font-size:24px;">Sorry, there was an error while minting your NFT. Please try again.</p>
-      </div>
-    `;
-
     return c.res({
-      image: createDataUrl(html),
+      image: createPlaceholderImage('Minting Failed\nSorry, there was an error while minting your NFT. Please try again.'),
       intents: [
         <Button action="/">Try Again</Button>
       ],
