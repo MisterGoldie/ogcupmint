@@ -1,39 +1,16 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { ThirdwebSDK } from "@thirdweb-dev/sdk";
-import { BaseGoerli } from "@thirdweb-dev/chains";
 
-// Define the contract address
-const CONTRACT_ADDRESS = '0x404240F00cDDC0070117e6D046Bf5D118A7E9641';
+// Define the IMAGE_URL constant
 const IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmPajdnayjQgnbtLAXf1FyFL2tpZ7kDZBrqULB4XRLBWkb';
-
-function getBaseUrl(req: NextApiRequest) {
-  const host = req.headers.host || 'localhost:3000';
-  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-  return `${protocol}://${host}`;
-}
-
-const mintABI = [
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-    ],
-    name: "mint",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-] as const;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log(`Received ${req.method} request to /api/frame`);
+
   const baseUrl = process.env.NEXT_PUBLIC_URL || getBaseUrl(req);
   const postUrl = `${baseUrl}/api/frame`;
 
   if (req.method === 'GET') {
+    console.log('Handling GET request');
     const html = `
       <!DOCTYPE html>
       <html>
@@ -46,81 +23,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           <meta property="fc:frame:post_url" content="${postUrl}" />
         </head>
         <body>
-          <h1>NFT Minting Frame</h1>
+          <h1>Mint Your NFT</h1>
+          <iframe
+            src="https://embed.ipfscdn.io/ipfs/bafybeicd3qfzelz4su7ng6n523virdsgobrc5pcbarhwqv3dj3drh645pi/?contract=0x404240F00cDDC0070117e6D046Bf5D118A7E9641&chain=%7B%22name%22%3A%22Base%22%2C%22chain%22%3A%22ETH%22%2C%22rpc%22%3A%5B%22https%3A%2F%2F8453.rpc.thirdweb.com%2F%24%7BTHIRDWEB_API_KEY%7D%22%5D%2C%22nativeCurrency%22%3A%7B%22name%22%3A%22Ether%22%2C%22symbol%22%3A%22ETH%22%2C%22decimals%22%3A18%7D%2C%22shortName%22%3A%22base%22%2C%22chainId%22%3A8453%2C%22testnet%22%3Afalse%2C%22slug%22%3A%22base%22%2C%22icon%22%3A%7B%22url%22%3A%22ipfs%3A%2F%2FQmaxRoHpxZd8PqccAynherrMznMufG6sdmHZLihkECXmZv%22%2C%22width%22%3A1200%2C%22height%22%3A1200%2C%22format%22%3A%22png%22%7D%7D&clientId=d5e30dbd9670f95f0e4c6af6e635c750&theme=light&primaryColor=purple"
+            width="600px"
+            height="600px"
+            style="max-width:100%;"
+            frameborder="0"
+          ></iframe>
         </body>
       </html>
     `;
     res.setHeader('Content-Type', 'text/html');
     return res.status(200).send(html);
-  } else if (req.method === 'POST') {
-    try {
-      if (!process.env.PRIVATE_KEY) {
-        throw new Error('PRIVATE_KEY is not set in environment variables');
-      }
-      const sdk = ThirdwebSDK.fromPrivateKey(process.env.PRIVATE_KEY, BaseGoerli);
-      const contract = await sdk.getContract(CONTRACT_ADDRESS, mintABI);
-      const address = req.body?.untrustedData?.fid ? `fid:${req.body.untrustedData.fid}` : 'unknown';
-      const mintResult = await contract.call("mint", [address]);
-      const transactionHash = mintResult.receipt.transactionHash;
-
-      const html = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>NFT Minted Successfully</title>
-            <meta property="og:image" content="${IMAGE_URL}" />
-            <meta property="fc:frame" content="vNext" />
-            <meta property="fc:frame:image" content="${IMAGE_URL}" />
-            <meta property="fc:frame:button:1" content="View Transaction" />
-            <meta property="fc:frame:button:2" content="Mint Another" />
-            <meta property="fc:frame:post_url" content="${postUrl}" />
-          </head>
-          <body>
-            <h1>NFT Minted Successfully</h1>
-            <p>Transaction Hash: ${transactionHash}</p>
-          </body>
-        </html>
-      `;
-      res.setHeader('Content-Type', 'text/html');
-      return res.status(200).send(html);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      const html = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>Minting Failed</title>
-            <meta property="og:image" content="${IMAGE_URL}" />
-            <meta property="fc:frame" content="vNext" />
-            <meta property="fc:frame:image" content="${IMAGE_URL}" />
-            <meta property="fc:frame:button:1" content="Try Again" />
-            <meta property="fc:frame:post_url" content="${postUrl}" />
-          </head>
-          <body>
-            <h1>Minting Failed</h1>
-            <p>Error: ${errorMessage}</p>
-          </body>
-        </html>
-      `;
-      res.setHeader('Content-Type', 'text/html');
-      return res.status(200).send(html);
-    }
   } else {
-    res.setHeader('Allow', ['GET', 'POST']);
+    console.log(`Unsupported method: ${req.method}`);
+    res.setHeader('Allow', ['GET']);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
 
-async function getAdminRole() {
-  try {
-    const sdk = ThirdwebSDK.fromPrivateKey(process.env.PRIVATE_KEY!, BaseGoerli);
-    const contract = await sdk.getContract(CONTRACT_ADDRESS);
-    const adminRole = await contract.call("DEFAULT_ADMIN_ROLE");
-    console.log('Admin Role:', adminRole);
-    return adminRole;
-  } catch (error) {
-    console.error('Error fetching admin role:', error);
-  }
+function getBaseUrl(req: NextApiRequest): string {
+  const host = req.headers.host || 'localhost:3000';
+  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+  return `${protocol}://${host}`;
 }
-
-getAdminRole();

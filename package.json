@@ -15,6 +15,7 @@
     "hono": "^4"
   },
   "devDependencies": {
+    "@types/node": "^22.5.0",
     "@types/react": "^18.3.4",
     "tsx": "^4.7.1",
     "typescript": "^5.3.3",
