@@ -33,14 +33,11 @@ async function initializeSDK() {
 // Initialize SDK before defining routes
 initializeSDK().catch(console.error);
 
-function createPlaceholderImage(text: string): string {
-  const encodedText = encodeURIComponent(text);
-  return `https://via.placeholder.com/1146x600.png?text=${encodedText}`;
-}
+const STATIC_IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmYmLrfR3R67ZUfcFpo8DvnEoKnRqRv3gY9oRbsrnP7UZm';
 
 app.frame('/', (c) => {
   return c.res({
-    image: createPlaceholderImage('NFT Minting Frame\nClick the button below to mint your NFT!'),
+    image: STATIC_IMAGE_URL,
     intents: [
       <Button action="mint">Mint NFT</Button>
     ],
@@ -58,7 +55,7 @@ app.frame('/mint', async (c) => {
     const tokenId = mintResult.id;
 
     return c.res({
-      image: createPlaceholderImage(`NFT Minted Successfully!\nCongratulations! Your NFT has been minted.\nToken ID: ${tokenId}`),
+      image: STATIC_IMAGE_URL,
       intents: [
         <Button action="/">Mint Another</Button>
       ],
@@ -70,7 +67,7 @@ app.frame('/mint', async (c) => {
     }
 
     return c.res({
-      image: createPlaceholderImage('Minting Failed\nSorry, there was an error while minting your NFT. Please try again.'),
+      image: STATIC_IMAGE_URL,
       intents: [
         <Button action="/">Try Again</Button>
       ],
