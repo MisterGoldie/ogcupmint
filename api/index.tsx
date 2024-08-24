@@ -34,9 +34,18 @@ const STATIC_IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ip
 
 app.frame('/', (c) => {
   return c.res({
-    image: STATIC_IMAGE_URL,
+    image: `
+      <html>
+        <head>
+          <title>NFT Minting Frame</title>
+          <meta property="fc:frame" content="vNext" />
+          <meta property="fc:frame:image" content="${STATIC_IMAGE_URL}" />
+          <meta property="og:image" content="${STATIC_IMAGE_URL}" />
+        </head>
+      </html>
+    `,
     intents: [
-      <Button action="post">Mint NFT</Button>
+      <Button value="mint">Mint NFT</Button>
     ],
   });
 });
@@ -45,9 +54,18 @@ app.frame('/mint', async (c) => {
   const contractInstance = await contract;
   if (!contractInstance) {
     return c.res({
-      image: STATIC_IMAGE_URL,
+      image: `
+        <html>
+          <head>
+            <title>NFT Minting Frame - Error</title>
+            <meta property="fc:frame" content="vNext" />
+            <meta property="fc:frame:image" content="${STATIC_IMAGE_URL}" />
+            <meta property="og:image" content="${STATIC_IMAGE_URL}" />
+          </head>
+        </html>
+      `,
       intents: [
-        <Button action="post">Try Again</Button>
+        <Button value="retry">Try Again</Button>
       ],
     });
   }
@@ -57,19 +75,37 @@ app.frame('/mint', async (c) => {
     await contractInstance.erc721.mint(address);
     
     return c.res({
-      image: STATIC_IMAGE_URL,
+      image: `
+        <html>
+          <head>
+            <title>NFT Minting Frame - Success</title>
+            <meta property="fc:frame" content="vNext" />
+            <meta property="fc:frame:image" content="${STATIC_IMAGE_URL}" />
+            <meta property="og:image" content="${STATIC_IMAGE_URL}" />
+          </head>
+        </html>
+      `,
       intents: [
-        <Button action="post">View Transaction</Button>,
-        <Button action="post">Mint Another</Button>
+        <Button value="view">View Transaction</Button>,
+        <Button value="mint">Mint Another</Button>
       ],
     });
   } catch (error) {
     console.error('Error minting NFT:', error);
     
     return c.res({
-      image: STATIC_IMAGE_URL,
+      image: `
+        <html>
+          <head>
+            <title>NFT Minting Frame - Error</title>
+            <meta property="fc:frame" content="vNext" />
+            <meta property="fc:frame:image" content="${STATIC_IMAGE_URL}" />
+            <meta property="og:image" content="${STATIC_IMAGE_URL}" />
+          </head>
+        </html>
+      `,
       intents: [
-        <Button action="post">Try Again</Button>
+        <Button value="retry">Try Again</Button>
       ],
     });
   }
