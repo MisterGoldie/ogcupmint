@@ -57,7 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       console.log('Minting NFT');
       const mintResult = await contract.erc721.mint(address);
-      console.log('Mint result:', JSON.stringify(mintResult, null, 2));
+      console.log('Mint result:', JSON.stringify(mintResult, null, 2)); // CHANGE: Added detailed logging of mint result
       const transactionHash = mintResult.receipt.transactionHash;
       console.log(`Minted successfully. Transaction hash: ${transactionHash}`);
 
@@ -84,7 +84,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } catch (error) {
       console.error('Error minting NFT:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Detailed error:', JSON.stringify(error, null, 2));
+      console.error('Detailed error:', JSON.stringify(error, null, 2)); // CHANGE: Added more detailed error logging
       const html = `
         <!DOCTYPE html>
         <html>
