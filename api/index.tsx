@@ -3,7 +3,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { ThirdwebSDK } from '@thirdweb-dev/sdk';
 import { BaseGoerli } from '@thirdweb-dev/chains';
 
-const IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmPajdnayjQgnbtLAXf1FyFL2tpZ7kDZBrqULB4XRLBWkb';
+// Using a publicly accessible image from Imgur
+const IMAGE_URL = 'https://i.imgur.com/Wc8a4M2.png';
 const CONTRACT_ADDRESS = '0x404240F00cDDC0070117e6D046Bf5D118A7E9641';
 
 function getBaseUrl(req: NextApiRequest) {
