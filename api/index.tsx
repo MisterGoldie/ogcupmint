@@ -51,6 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             </head>
             <body>
               <p>Ready to mint your NFT!</p>
+              <a href="${MINT_URL}" target="_blank">Click here to go to the minting page</a>
             </body>
           </html>
         `;
