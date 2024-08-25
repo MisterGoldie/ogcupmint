@@ -115,7 +115,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           <meta property="fc:frame:image" content="${IMAGE_URL}" />
           <meta property="og:image" content="${IMAGE_URL}" />
           <meta property="og:title" content="Minting Error" />
-          <meta property="fc:frame:button:1" content="Try Again" />
+          <meta property="fc:frame:button:1" content="Try again" />
           <meta property="fc:frame:button:1:action" content="post" />
           <meta property="fc:frame:post_url" content="${req.headers.host}/api/frame" />
         </head>
