@@ -13,7 +13,7 @@ const RPC_URL = `https://8453.rpc.thirdweb.com/${THIRDWEB_SECRET_KEY}`;
 
 // Define the Base chain
 const baseChain = {
-  chainId: 8453,
+  chainId: 843,
   rpc: [RPC_URL],
   nativeCurrency: {
     name: "Ether",
