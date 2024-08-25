@@ -15,13 +15,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       <html>
         <head>
           <title>NFT Minting Frame</title>
-          <meta name="fc:frame" content="vNext" />
-          <meta name="fc:frame:image" content="${IMAGE_URL}" />
-          <meta name="og:image" content="${IMAGE_URL}" />
-          <meta name="og:title" content="NFT Minting Frame" />
-          <meta name="fc:frame:button:1" content="Mint NFT" />
-          <meta name="fc:frame:button:1:action" content="post" />
-          <meta name="fc:frame:post_url" content="${postUrl}" />
+          <meta property="fc:frame" content="vNext" />
+          <meta property="fc:frame:image" content="${IMAGE_URL}" />
+          <meta property="og:image" content="${IMAGE_URL}" />
+          <meta property="og:title" content="NFT Minting Frame" />
+          <meta property="fc:frame:button:1" content="Mint NFT" />
+          <meta property="fc:frame:button:1:action" content="post" />
+          <meta property="fc:frame:post_url" content="${postUrl}" />
         </head>
         <body>
           <h1>Mint Your NFT</h1>
@@ -32,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).send(html);
   } else if (req.method === 'POST') {
     try {
-      console.log('Received POST request:', req.body);
+      console.log('Received POST request:', JSON.stringify(req.body, null, 2));
       const { untrustedData } = req.body;
       const userFid = untrustedData?.fid;
       
@@ -49,15 +49,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         <html>
           <head>
             <title>NFT Minted Successfully</title>
-            <meta name="fc:frame" content="vNext" />
-            <meta name="fc:frame:image" content="${IMAGE_URL}" />
-            <meta name="og:image" content="${IMAGE_URL}" />
-            <meta name="og:title" content="NFT Minted Successfully" />
-            <meta name="fc:frame:button:1" content="View Transaction" />
-            <meta name="fc:frame:button:1:action" content="post" />
-            <meta name="fc:frame:button:2" content="Mint Another" />
-            <meta name="fc:frame:button:2:action" content="post" />
-            <meta name="fc:frame:post_url" content="${postUrl}" />
+            <meta property="fc:frame" content="vNext" />
+            <meta property="fc:frame:image" content="${IMAGE_URL}" />
+            <meta property="og:image" content="${IMAGE_URL}" />
+            <meta property="og:title" content="NFT Minted Successfully" />
+            <meta property="fc:frame:button:1" content="View Transaction" />
+            <meta property="fc:frame:button:1:action" content="link" />
+            <meta property="fc:frame:button:1:target" content="https://basescan.org/tx/${transactionHash}" />
+            <meta property="fc:frame:button:2" content="Mint Another" />
+            <meta property="fc:frame:button:2:action" content="post" />
+            <meta property="fc:frame:post_url" content="${postUrl}" />
           </head>
           <body>
             <h1>NFT Minted Successfully!</h1>
@@ -75,13 +76,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         <html>
           <head>
             <title>Minting Error</title>
-            <meta name="fc:frame" content="vNext" />
-            <meta name="fc:frame:image" content="${IMAGE_URL}" />
-            <meta name="og:image" content="${IMAGE_URL}" />
-            <meta name="og:title" content="Minting Error" />
-            <meta name="fc:frame:button:1" content="Try Again" />
-            <meta name="fc:frame:button:1:action" content="post" />
-            <meta name="fc:frame:post_url" content="${postUrl}" />
+            <meta property="fc:frame" content="vNext" />
+            <meta property="fc:frame:image" content="${IMAGE_URL}" />
+            <meta property="og:image" content="${IMAGE_URL}" />
+            <meta property="og:title" content="Minting Error" />
+            <meta property="fc:frame:button:1" content="Try Again" />
+            <meta property="fc:frame:button:1:action" content="post" />
+            <meta property="fc:frame:post_url" content="${postUrl}" />
           </head>
           <body>
             <h1>Minting Error</h1>
@@ -112,7 +113,7 @@ async function performMint(userFid: string) {
   console.log('Minting to address:', address);
   
   const mintResult = await contract.erc721.mint(address);
-  console.log('Mint result:', mintResult);
+  console.log('Mint result:', JSON.stringify(mintResult, null, 2));
   return mintResult.receipt.transactionHash;
 }
 
