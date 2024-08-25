@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
 // Constants
-const IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmPajdnayjQgnbtLAXf1FyFL2tpZ7kDZBrqULB4XRLBWkb';
+const IMAGE_URL = 'https://placehold.co/600x400?text=NFT+Minting+Frame';
 const THIRDWEB_CLIENT_ID = process.env.THIRDWEB_CLIENT_ID;
 const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
 const NFT_CONTRACT_ADDRESS = process.env.NFT_CONTRACT_ADDRESS;
@@ -14,6 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const postUrl = `${baseUrl}/api/frame`;
 
     if (req.method === 'GET') {
+      console.log('IMAGE_URL:', IMAGE_URL); // Log the image URL
       const html = `
         <!DOCTYPE html>
         <html>
@@ -100,6 +101,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     
     // Log additional details that might be helpful
+    console.error('IMAGE_URL:', IMAGE_URL);
     console.error('THIRDWEB_CLIENT_ID:', THIRDWEB_CLIENT_ID ? 'Set' : 'Not set');
     console.error('THIRDWEB_SECRET_KEY:', THIRDWEB_SECRET_KEY ? 'Set' : 'Not set');
     console.error('NFT_CONTRACT_ADDRESS:', NFT_CONTRACT_ADDRESS);
