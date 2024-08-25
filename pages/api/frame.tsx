@@ -1,10 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 
 // Constants
 const IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmPajdnayjQgnbtLAXf1FyFL2tpZ7kDZBrqULB4XRLBWkb';
 const THIRDWEB_CLIENT_ID = process.env.THIRDWEB_CLIENT_ID;
 const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
 const NFT_CONTRACT_ADDRESS = process.env.NFT_CONTRACT_ADDRESS;
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log(`Received ${req.method} request to /api/frame`);
@@ -53,14 +55,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log('User address:', userAddress);
 
       // Check for required environment variables
-      if (!THIRDWEB_CLIENT_ID || !THIRDWEB_SECRET_KEY || !NFT_CONTRACT_ADDRESS) {
+      if (!THIRDWEB_CLIENT_ID || !THIRDWEB_SECRET_KEY || !NFT_CONTRACT_ADDRESS || !PRIVATE_KEY) {
         throw new Error("Missing required environment variables");
       }
 
-      // Simulate minting process
-      console.log('Simulating NFT mint...');
-      const txHash = `0x${Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
-      console.log('Simulated transaction hash:', txHash);
+      // Initialize Thirdweb SDK
+      const sdk = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, "base", {
+        clientId: THIRDWEB_CLIENT_ID,
+        secretKey: THIRDWEB_SECRET_KEY,
+      });
+
+      // Get the contract
+      const contract = await sdk.getContract(NFT_CONTRACT_ADDRESS);
+
+      // Mint the NFT
+      console.log('Minting NFT...');
+      const tx = await contract.erc721.mint({
+        to: userAddress,
+        metadata: {
+          name: "Farcaster Frame NFT",
+          description: "An NFT minted through a Farcaster Frame",
+          image: IMAGE_URL,
+        },
+      });
+
+      // Wait for the transaction to be mined
+      const receipt = await tx.receipt;
+      const txHash = receipt.transactionHash;
+      console.log('Minting successful. Transaction hash:', txHash);
 
       const html = `
         <!DOCTYPE html>
@@ -103,6 +125,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('THIRDWEB_CLIENT_ID:', THIRDWEB_CLIENT_ID ? 'Set' : 'Not set');
     console.error('THIRDWEB_SECRET_KEY:', THIRDWEB_SECRET_KEY ? 'Set' : 'Not set');
     console.error('NFT_CONTRACT_ADDRESS:', NFT_CONTRACT_ADDRESS);
+    console.error('PRIVATE_KEY:', PRIVATE_KEY ? 'Set' : 'Not set');
     
     const html = `
       <!DOCTYPE html>
