@@ -12,7 +12,8 @@
     "@thirdweb-dev/sdk": "^4.0.99",
     "dotenv": "^16.4.5",
     "frog": "^0.17.0",
-    "hono": "^4"
+    "hono": "^4",
+    "thirdweb": "^5.48.2"
   },
   "devDependencies": {
     "@types/node": "^22.5.0",
