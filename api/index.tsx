@@ -85,17 +85,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       // Set up provider and wallet
+      console.log('Setting up provider...');
       const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+      console.log('Provider set up successfully');
+
+      console.log('Setting up wallet...');
       const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
+      console.log('Wallet set up successfully');
 
       // Create contract instance
+      console.log('Creating contract instance...');
       const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_CONTRACT_ABI, wallet);
+      console.log('Contract instance created successfully');
 
       // Call mint function
+      console.log('Calling mint function...');
       const tx = await nftContract.mint(userFid);
       console.log('Minting transaction sent:', tx.hash);
 
       // Wait for transaction to be mined
+      console.log('Waiting for transaction to be mined...');
       const receipt = await tx.wait();
       console.log('Minting successful. Transaction hash:', receipt.transactionHash);
 
@@ -126,8 +135,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).send(html);
     } catch (error) {
       console.error('Error minting NFT:', error);
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      let errorMessage = 'An unknown error occurred';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        console.error('Error stack:', error.stack);
+      }
       
+      // Log additional details that might be helpful
+      console.error('RPC_URL:', RPC_URL);
+      console.error('NFT_CONTRACT_ADDRESS:', NFT_CONTRACT_ADDRESS);
+      console.error('User FID:', req.body?.untrustedData?.fid);
+
       const html = `
         <!DOCTYPE html>
         <html>
