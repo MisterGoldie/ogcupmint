@@ -1,26 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 
 // Constants
 const IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmPajdnayjQgnbtLAXf1FyFL2tpZ7kDZBrqULB4XRLBWkb';
 const THIRDWEB_CLIENT_ID = process.env.THIRDWEB_CLIENT_ID;
 const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
 const NFT_CONTRACT_ADDRESS = process.env.NFT_CONTRACT_ADDRESS;
-
-// Construct the RPC URL using the Thirdweb secret key
-const RPC_URL = `https://8453.rpc.thirdweb.com/${THIRDWEB_SECRET_KEY}`;
-
-// Define the Base chain
-const baseChain = {
-  chainId: 8453,
-  rpc: [RPC_URL],
-  nativeCurrency: {
-    name: "Ether",
-    symbol: "ETH",
-    decimals: 18,
-  },
-  slug: "base",
-};
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log(`Received ${req.method} request to /api/frame`);
@@ -39,12 +23,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             <meta property="fc:frame:image" content="${IMAGE_URL}" />
             <meta property="og:image" content="${IMAGE_URL}" />
             <meta property="og:title" content="NFT Minting Frame" />
-            <meta property="fc:frame:button:1" content="Connect Wallet" />
+            <meta property="fc:frame:button:1" content="Mint NFT" />
             <meta property="fc:frame:button:1:action" content="post" />
             <meta property="fc:frame:post_url" content="${postUrl}" />
           </head>
           <body>
-            <h1>Connect your wallet to mint an NFT</h1>
+            <h1>Click to mint your NFT</h1>
           </body>
         </html>
       `;
@@ -52,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       return res.status(200).send(html);
     } else if (req.method === 'POST') {
-      console.log('Handling POST request for wallet connection');
+      console.log('Handling POST request for minting');
       console.log('Request body:', JSON.stringify(req.body, null, 2));
       
       const { untrustedData } = req.body;
@@ -68,22 +52,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       console.log('User address:', userAddress);
 
-      // Initialize the SDK
-      const sdk = new ThirdwebSDK(baseChain, {
-        clientId: THIRDWEB_CLIENT_ID,
-        secretKey: THIRDWEB_SECRET_KEY,
-      });
-
-      // Get the contract
-      console.log('Getting contract...');
-      if (!NFT_CONTRACT_ADDRESS) {
-        throw new Error("NFT contract address is not set");
+      // Check for required environment variables
+      if (!THIRDWEB_CLIENT_ID || !THIRDWEB_SECRET_KEY || !NFT_CONTRACT_ADDRESS) {
+        throw new Error("Missing required environment variables");
       }
-      await sdk.getContract(NFT_CONTRACT_ADDRESS);
-      console.log('Contract retrieved');
 
-      // In a real implementation, you would mint the NFT here
-      // For this example, we'll simulate a successful mint
+      // Simulate minting process
       console.log('Simulating NFT mint...');
       const txHash = `0x${Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
       console.log('Simulated transaction hash:', txHash);
@@ -129,7 +103,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('THIRDWEB_CLIENT_ID:', THIRDWEB_CLIENT_ID ? 'Set' : 'Not set');
     console.error('THIRDWEB_SECRET_KEY:', THIRDWEB_SECRET_KEY ? 'Set' : 'Not set');
     console.error('NFT_CONTRACT_ADDRESS:', NFT_CONTRACT_ADDRESS);
-    console.error('RPC_URL:', RPC_URL);
     
     const html = `
       <!DOCTYPE html>
@@ -152,7 +125,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     `;
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    return res.status(500).send(html);
+    return res.status(200).send(html);
   }
 }
 

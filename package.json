@@ -1,25 +1,23 @@
 {
   "name": "ogcupmint",
+  "version": "1.0.0",
   "private": true,
-  "type": "module",
   "scripts": {
-    "build": "frog vercel-build",
-    "dev": "frog dev",
-    "deploy": "vercel"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
-    "@thirdweb-dev/chains": "^0.1.120",
+    "next": "^13.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "@thirdweb-dev/sdk": "^4.0.99",
-    "dotenv": "^16.4.5",
-    "frog": "^0.17.0",
-    "hono": "^4",
-    "thirdweb": "^5.48.2"
+    "ethers": "^5.7.2"
   },
   "devDependencies": {
-    "@types/node": "^22.5.0",
-    "@types/react": "^18.3.4",
-    "tsx": "^4.7.1",
-    "typescript": "^5.3.3",
-    "vercel": "^32.4.1"
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "typescript": "^5.0.4"
   }
 }
