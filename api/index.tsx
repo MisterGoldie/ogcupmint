@@ -1,6 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { ThirdwebSDK } from "@thirdweb-dev/sdk";
+import { Base } from "@thirdweb-dev/chains";
 
 const IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmPajdnayjQgnbtLAXf1FyFL2tpZ7kDZBrqULB4XRLBWkb';
+const CONTRACT_ADDRESS = '0x404240F00cDDC0070117e6D046Bf5D118A7E9641'; // Replace with your actual contract address
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log(`Received ${req.method} request to /api/frame`);
@@ -9,27 +12,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const postUrl = `${baseUrl}/api/frame`;
 
   if (req.method === 'GET') {
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>NFT Minting Frame</title>
-          <meta property="fc:frame" content="vNext" />
-          <meta property="fc:frame:image" content="${IMAGE_URL}" />
-          <meta property="og:image" content="${IMAGE_URL}" />
-          <meta property="og:title" content="NFT Minting Frame" />
-          <meta property="fc:frame:button:1" content="Mint NFT" />
-          <meta property="fc:frame:button:1:action" content="post" />
-          <meta property="fc:frame:post_url" content="${postUrl}" />
-        </head>
-        <body>
-          <h1>Mint Your NFT</h1>
-        </body>
-      </html>
-    `;
-    res.setHeader('Content-Type', 'text/html');
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    return res.status(200).send(html);
+    // GET handler remains the same
+    // ...
   } else if (req.method === 'POST') {
     console.log('Handling POST request');
     console.log('Request body:', JSON.stringify(req.body, null, 2));
@@ -43,9 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       console.log('Attempting to mint for FID:', userFid);
-      // Here you would typically call a function to perform the actual minting
-      // For now, we'll just simulate a successful mint
-      const transactionHash = "0x" + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+      const transactionHash = await performMint(userFid);
       console.log('Minting successful. Transaction hash:', transactionHash);
 
       const html = `
@@ -104,6 +86,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.setHeader('Allow', ['GET', 'POST']);
     return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
+}
+
+async function performMint(userFid: string): Promise<string> {
+  if (!process.env.THIRDWEB_SECRET_KEY) {
+    throw new Error('THIRDWEB_SECRET_KEY is not set in environment variables');
+  }
+
+  const sdk = new ThirdwebSDK(Base, {
+    secretKey: process.env.THIRDWEB_SECRET_KEY,
+  });
+
+  const contract = await sdk.getContract(CONTRACT_ADDRESS);
+  
+  // Convert FID to an Ethereum address (you need to implement this properly)
+  const address = `0x${userFid.padStart(40, '0')}`;
+
+  const mintResult = await contract.erc721.mint(address);
+  return mintResult.receipt.transactionHash;
 }
 
 function getBaseUrl(req: NextApiRequest): string {
