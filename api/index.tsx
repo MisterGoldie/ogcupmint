@@ -26,16 +26,36 @@ const baseChain = {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log(`Received ${req.method} request to /api/frame`);
   
-  const baseUrl = process.env.NEXT_PUBLIC_URL || getBaseUrl(req);
-  const postUrl = `${baseUrl}/api/frame`;
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_URL || getBaseUrl(req);
+    const postUrl = `${baseUrl}/api/frame`;
 
-  if (req.method === 'GET') {
-    // ... (GET method handling remains the same)
-  } else if (req.method === 'POST') {
-    console.log('Handling POST request for minting');
-    console.log('Request body:', JSON.stringify(req.body, null, 2));
-    
-    try {
+    if (req.method === 'GET') {
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>NFT Minting Frame</title>
+            <meta property="fc:frame" content="vNext" />
+            <meta property="fc:frame:image" content="${IMAGE_URL}" />
+            <meta property="og:image" content="${IMAGE_URL}" />
+            <meta property="og:title" content="NFT Minting Frame" />
+            <meta property="fc:frame:button:1" content="Mint NFT" />
+            <meta property="fc:frame:button:1:action" content="post" />
+            <meta property="fc:frame:post_url" content="${postUrl}" />
+          </head>
+          <body>
+            <h1>Mint Your NFT</h1>
+          </body>
+        </html>
+      `;
+      res.setHeader('Content-Type', 'text/html');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      return res.status(200).send(html);
+    } else if (req.method === 'POST') {
+      console.log('Handling POST request for minting');
+      console.log('Request body:', JSON.stringify(req.body, null, 2));
+      
       const { untrustedData } = req.body;
       const userFid = untrustedData?.fid;
       
@@ -51,14 +71,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       // Initialize the SDK with the custom RPC URL
+      console.log('Initializing Thirdweb SDK...');
       const sdk = new ThirdwebSDK(baseChain, {
         clientId: THIRDWEB_CLIENT_ID,
         secretKey: THIRDWEB_SECRET_KEY,
       });
       await sdk.wallet.connect(PRIVATE_KEY);
+      console.log('SDK initialized and wallet connected');
 
       // Get the contract
+      console.log('Getting contract...');
       const contract = await sdk.getContract(NFT_CONTRACT_ADDRESS);
+      console.log('Contract retrieved');
 
       // Mint the NFT
       console.log('Minting NFT...');
@@ -97,40 +121,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.setHeader('Content-Type', 'text/html');
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       return res.status(200).send(html);
-    } catch (error) {
-      console.error('Error minting NFT:', error);
-      let errorMessage = 'An unknown error occurred';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-        console.error('Error stack:', error.stack);
-      }
-      
-      const html = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>Minting Error</title>
-            <meta property="fc:frame" content="vNext" />
-            <meta property="fc:frame:image" content="${IMAGE_URL}" />
-            <meta property="og:image" content="${IMAGE_URL}" />
-            <meta property="og:title" content="Minting Error" />
-            <meta property="fc:frame:button:1" content="Try Again" />
-            <meta property="fc:frame:button:1:action" content="post" />
-            <meta property="fc:frame:post_url" content="${postUrl}" />
-          </head>
-          <body>
-            <h1>Minting Error</h1>
-            <p>Error: ${errorMessage}</p>
-          </body>
-        </html>
-      `;
-      res.setHeader('Content-Type', 'text/html');
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      return res.status(200).send(html);
+    } else {
+      res.setHeader('Allow', ['GET', 'POST']);
+      return res.status(405).end(`Method ${req.method} Not Allowed`);
     }
-  } else {
-    res.setHeader('Allow', ['GET', 'POST']);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+  } catch (error) {
+    console.error('Error in frame handler:', error);
+    let errorMessage = 'An unknown error occurred';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      console.error('Error stack:', error.stack);
+    }
+    
+    // Log additional details that might be helpful
+    console.error('THIRDWEB_CLIENT_ID:', THIRDWEB_CLIENT_ID ? 'Set' : 'Not set');
+    console.error('THIRDWEB_SECRET_KEY:', THIRDWEB_SECRET_KEY ? 'Set' : 'Not set');
+    console.error('NFT_CONTRACT_ADDRESS:', NFT_CONTRACT_ADDRESS);
+    console.error('RPC_URL:', RPC_URL);
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Minting Error</title>
+          <meta property="fc:frame" content="vNext" />
+          <meta property="fc:frame:image" content="${IMAGE_URL}" />
+          <meta property="og:image" content="${IMAGE_URL}" />
+          <meta property="og:title" content="Minting Error" />
+          <meta property="fc:frame:button:1" content="Try Again" />
+          <meta property="fc:frame:button:1:action" content="post" />
+          <meta property="fc:frame:post_url" content="${req.headers.host}/api/frame" />
+        </head>
+        <body>
+          <h1>Minting Error</h1>
+          <p>Error: ${errorMessage}</p>
+        </body>
+      </html>
+    `;
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    return res.status(500).send(html);
   }
 }
 
