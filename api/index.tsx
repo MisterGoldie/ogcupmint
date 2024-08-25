@@ -1,6 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { ThirdwebSDK } from "@thirdweb-dev/sdk";
+import { Base } from "@thirdweb-dev/chains";
 
 const IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmPajdnayjQgnbtLAXf1FyFL2tpZ7kDZBrqULB4XRLBWkb';
+const CONTRACT_ADDRESS = '0x404240F00cDDC0070117e6D046Bf5D118A7E9641';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log(`Received ${req.method} request to /api/frame`);
@@ -43,9 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       console.log('Attempting to mint for FID:', userFid);
-      // Here you would typically call a function to perform the actual minting
-      // For now, we'll just simulate a successful mint
-      const transactionHash = "0x" + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+      const transactionHash = await performMint(userFid);
       console.log('Minting successful. Transaction hash:', transactionHash);
 
       const html = `
@@ -104,6 +105,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.setHeader('Allow', ['GET', 'POST']);
     return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
+}
+
+async function performMint(userFid: string): Promise<string> {
+  if (!process.env.THIRDWEB_SECRET_KEY) {
+    throw new Error('THIRDWEB_SECRET_KEY is not set in environment variables');
+  }
+
+  const sdk = new ThirdwebSDK(Base, {
+    secretKey: process.env.THIRDWEB_SECRET_KEY,
+  });
+
+  const contract = await sdk.getContract(CONTRACT_ADDRESS);
+  
+  // Convert FID to an Ethereum address
+  const address = await convertFidToAddress(userFid);
+
+  const mintResult = await contract.erc721.mint(address);
+  return mintResult.receipt.transactionHash;
+}
+
+async function convertFidToAddress(fid: string): Promise<string> {
+  // This is a placeholder. You need to implement the actual conversion logic.
+  // For now, we'll just return a dummy address
+  return `0x${fid.padStart(40, '0')}`;
 }
 
 function getBaseUrl(req: NextApiRequest): string {
