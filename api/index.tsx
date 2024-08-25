@@ -71,6 +71,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } catch (error) {
       console.error('Error minting NFT:', error);
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      const errorDetails = error instanceof Error ? error.stack : 'No stack trace available';
+      console.error('Error details:', errorDetails);
+      
       const html = `
         <!DOCTYPE html>
         <html>
@@ -86,7 +89,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           </head>
           <body>
             <h1>Minting Error</h1>
-            <p>${errorMessage}</p>
+            <p>Error: ${errorMessage}</p>
+            <p>Details: ${errorDetails}</p>
           </body>
         </html>
       `;
@@ -101,6 +105,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 async function performMint(userFid: string) {
   console.log('Initializing ThirdwebSDK');
+  if (!process.env.THIRDWEB_SECRET_KEY) {
+    throw new Error('THIRDWEB_SECRET_KEY is not set');
+  }
   const sdk = new ThirdwebSDK(Base, {
     secretKey: process.env.THIRDWEB_SECRET_KEY,
   });
