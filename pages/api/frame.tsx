@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 
 // Constants
-const IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmPajdnayjQgnbtLAXf1FyFL2tpZ7kDZBrqULB4XRLBWkb'; // Your image URL
+const IMAGE_URL = 'https://amaranth-adequate-condor-278.mypinata.cloud/ipfs/QmYmLrfR3R67ZUfcFpo8DvnEoKnRqRv3gY9oRbsrnP7UZm'; // Your image URL
 const THIRDWEB_CLIENT_ID = process.env.THIRDWEB_CLIENT_ID;
 const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
 const NFT_CONTRACT_ADDRESS = process.env.NFT_CONTRACT_ADDRESS;
